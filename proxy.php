@@ -20,6 +20,7 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $targetUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_HEADER, true);
 
 // Forward the request headers
 $headers = getallheaders();
@@ -38,16 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Execute the cURL session
 $response = curl_exec($ch);
 
-// Check for errors
-if (curl_errno($ch)) {
-    http_response_code(500);
-    echo 'Proxy error: ' . curl_error($ch);
-} else {
-    // Forward the response
-    $responseStatusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    http_response_code($responseStatusCode);
-    echo $response;
+// Capture and forward the response headers
+$headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+$headers = substr($response, 0, $headerSize);
+foreach (explode("\r\n", $headers) as $header) {
+    if (strpos($header, ':')) {
+        header($header);
+    }
 }
+
+// Return the body of the response
+echo substr($response, $headerSize);
 
 // Close the cURL session
 curl_close($ch);
