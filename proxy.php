@@ -1,6 +1,6 @@
 <?php
 // Target server configuration
-$targetHost = 'localhost';
+$targetHost = '127.0.0.1';
 $targetPort = 8000; // Change this to the port your target server is running on
 
 // Extract the requested URI and query string
@@ -9,9 +9,6 @@ $queryString = $_SERVER['QUERY_STRING'];
 
 // Construct the target URL
 $targetUrl = "http://{$targetHost}:{$targetPort}{$requestUri}";
-if (!empty($queryString)) {
-    $targetUrl .= '?' . $queryString;
-}
 
 // Initialize a cURL session
 $ch = curl_init();
@@ -28,7 +25,8 @@ $curlHeaders = [];
 foreach ($headers as $key => $value) {
     $curlHeaders[] = "{$key}: {$value}";
 }
-curl_setopt($ch, CURLOPT_HTTPHEADER, $curlHeaders);
+
+//curl_setopt($ch, CURLOPT_HTTPHEADER, $curlHeaders); // disable it if the target server is confused by the request
 
 // Handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -53,4 +51,3 @@ echo substr($response, $headerSize);
 
 // Close the cURL session
 curl_close($ch);
-?>
